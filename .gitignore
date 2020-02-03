@@ -27,3 +27,5 @@ erl_crash.dump
 *.pem
 /log
 assets/npm-debug.log
+
+/.elixir_ls/
