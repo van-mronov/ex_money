@@ -62,7 +62,9 @@ defmodule ExMoney.User do
       {:ok, password} ->
         changeset
         |> Ecto.Changeset.put_change(:encrypted_password, Comeonin.Bcrypt.hashpwsalt(password))
-      :error -> changeset
+
+      :error ->
+        changeset
     end
   end
 
@@ -79,8 +81,12 @@ defmodule ExMoney.User do
 
   defp validate_password(changeset, crypted) do
     password = Ecto.Changeset.get_change(changeset, :password)
-    if valid_password?(password, crypted), do: changeset, else: password_incorrect_error(changeset)
+
+    if valid_password?(password, crypted),
+      do: changeset,
+      else: password_incorrect_error(changeset)
   end
 
-  defp password_incorrect_error(changeset), do: Ecto.Changeset.add_error(changeset, :password, "is incorrect")
+  defp password_incorrect_error(changeset),
+    do: Ecto.Changeset.add_error(changeset, :password, "is incorrect")
 end

@@ -5,7 +5,7 @@ defmodule ExMoney.Saltedge.AccountTest do
   import ExMoney.Factory
 
   setup do
-    bypass = Bypass.open
+    bypass = Bypass.open()
 
     {:ok, bypass: bypass}
   end
@@ -28,18 +28,20 @@ defmodule ExMoney.Saltedge.AccountTest do
         ]
       }
 
-      new_config = Application.get_env(:ex_money, :saltedge)
-      |> put_in([:base_url], "http://localhost:#{bypass.port}")
+      new_config =
+        Application.get_env(:ex_money, :saltedge)
+        |> put_in([:base_url], "http://localhost:#{bypass.port}")
+
       Application.put_env(:ex_money, :saltedge, new_config)
 
       login = insert(:login, saltedge_login_id: 123)
 
-      Bypass.expect bypass, fn conn ->
+      Bypass.expect(bypass, fn conn ->
         assert "/accounts" == conn.request_path
         assert "login_id=123" == conn.query_string
         assert "GET" == conn.method
         Plug.Conn.resp(conn, 200, Poison.encode!(response))
-      end
+      end)
 
       {:ok, login: login}
     end
@@ -58,11 +60,12 @@ defmodule ExMoney.Saltedge.AccountTest do
     end
 
     test "update an account", %{login: login} do
-      account = insert(:account,
-        login: login,
-        balance: Decimal.new(1000),
-        saltedge_account_id: 142
-      )
+      account =
+        insert(:account,
+          login: login,
+          balance: Decimal.new(1000),
+          saltedge_account_id: 142
+        )
 
       ExMoney.Saltedge.Account.sync(login.user_id, login.saltedge_login_id)
 

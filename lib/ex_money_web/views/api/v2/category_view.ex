@@ -9,10 +9,10 @@ defmodule ExMoney.Web.Api.V2.CategoryView do
 
   def render("category.json", %{category: category}) do
     %{
-       id: category.id,
-       name: category.name,
-       human_name: category.humanized_name,
-       parent_id: category.parent_id
-     }
+      id: category.id,
+      name: category.name,
+      human_name: category.humanized_name,
+      parent_id: category.parent_id
+    }
   end
 end

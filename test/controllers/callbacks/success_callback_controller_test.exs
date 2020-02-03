@@ -36,7 +36,6 @@ defmodule ExMoney.Web.Callbacks.SuccessCallbackControllerTest do
         customer_id: login.user.saltedge_customer_id,
         login_id: login.saltedge_login_id,
         provider_score: "foo"
-
       ],
       meta: [
         version: "2",

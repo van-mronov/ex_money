@@ -89,9 +89,13 @@ defmodule ExMoney.Web.Router do
 
     scope "/settings", as: :setting do
       get "/", SettingController, :index
-      resources "/budget", Setting.BudgetController, only: [:new, :show, :edit, :update, :create], singleton: true do
+
+      resources "/budget", Setting.BudgetController,
+        only: [:new, :show, :edit, :update, :create],
+        singleton: true do
         post "/apply", Setting.BudgetController, :apply
       end
+
       resources "/budget_items", Setting.BudgetItemController, only: [:delete]
 
       resources "/categories", Setting.CategoryController, only: [:index, :edit, :update]

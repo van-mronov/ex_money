@@ -27,7 +27,7 @@ defmodule ExMoney.Saltedge.SyncWorker do
   end
 
   defp sync_data(user_id, saltedge_login_id, state) do
-    login = Login.by_saltedge_login_id(saltedge_login_id) |> Repo.one
+    login = Login.by_saltedge_login_id(saltedge_login_id) |> Repo.one()
     ExMoney.Saltedge.Login.sync(user_id, login.saltedge_login_id)
 
     ExMoney.Saltedge.Account.sync(user_id, login.saltedge_login_id)
@@ -35,15 +35,21 @@ defmodule ExMoney.Saltedge.SyncWorker do
     fetch_type = fetch_type(state)
 
     Account.by_saltedge_login_id([login.saltedge_login_id])
-    |> Repo.all
-    |> Enum.each(fn(account) ->
-      {:ok, stored_transactions, fetched_transactions} = GenServer.call(
-        :transactions_worker,
-        {fetch_type, account.saltedge_account_id}
-      )
+    |> Repo.all()
+    |> Enum.each(fn account ->
+      {:ok, stored_transactions, fetched_transactions} =
+        GenServer.call(
+          :transactions_worker,
+          {fetch_type, account.saltedge_account_id}
+        )
+
       send_notification(user_id, account, stored_transactions)
 
-      Logger.info("Fetched #{fetched_transactions}, stored #{stored_transactions}, fetched with type #{fetch_type} for #{account.name} account")
+      Logger.info(
+        "Fetched #{fetched_transactions}, stored #{stored_transactions}, fetched with type #{
+          fetch_type
+        } for #{account.name} account"
+      )
     end)
   end
 
@@ -52,6 +58,7 @@ defmodule ExMoney.Saltedge.SyncWorker do
 
   defp send_notification(user_id, account, stored_transactions) do
     key = "refresh_channel_pid_user:#{user_id}"
+
     with [{_, pid}] <- :ets.lookup(:ex_money_cache, key) do
       if account.show_on_dashboard do
         Process.send_after(pid, {:transactions_fetched, account.name, stored_transactions}, 10)

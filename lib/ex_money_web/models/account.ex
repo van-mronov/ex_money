@@ -15,8 +15,10 @@ defmodule ExMoney.Account do
     belongs_to :login, ExMoney.Login,
       foreign_key: :saltedge_login_id,
       references: :saltedge_login_id
+
     belongs_to :user, ExMoney.User
     has_many :rules, ExMoney.Rule
+
     has_many :transactions, ExMoney.Transaction,
       on_delete: :delete_all,
       foreign_key: :saltedge_account_id,
@@ -59,7 +61,7 @@ defmodule ExMoney.Account do
   end
 
   def by_ids(ids) do
-    from a in Account, where: a.id in ^(ids)
+    from a in Account, where: a.id in ^ids
   end
 
   def show_on_dashboard do

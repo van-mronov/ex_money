@@ -20,6 +20,7 @@ defmodule ExMoney.Transaction do
     belongs_to :category, ExMoney.Category
     belongs_to :user, ExMoney.User
     belongs_to :account, ExMoney.Account
+
     belongs_to :saltedge_account, ExMoney.Account,
       foreign_key: :saltedge_account_id,
       references: :saltedge_account_id
@@ -67,7 +68,9 @@ defmodule ExMoney.Transaction do
     case Ecto.Changeset.fetch_change(changeset, :amount) do
       {:ok, amount} ->
         Ecto.Changeset.put_change(changeset, :amount, Decimal.mult(amount, Decimal.new(-1)))
-      :error -> changeset
+
+      :error ->
+        changeset
     end
   end
 
@@ -83,7 +86,7 @@ defmodule ExMoney.Transaction do
   end
 
   def recent(user_id) do
-    current_date = Timex.local
+    current_date = Timex.local()
     from = Timex.shift(current_date, days: -15)
 
     from tr in Transaction,
@@ -117,13 +120,13 @@ defmodule ExMoney.Transaction do
   def expenses_by_month_by_category(account_id, from, to, category_ids) do
     Transaction.by_month(account_id, from, to)
     |> where([tr], tr.amount < 0)
-    |> where([tr], tr.category_id in ^(category_ids))
+    |> where([tr], tr.category_id in ^category_ids)
     |> preload([:category, :account])
   end
 
   def by_month_by_category(account_id, from, to, category_ids) do
     Transaction.by_month(account_id, from, to)
-    |> where([tr], tr.category_id in ^(category_ids))
+    |> where([tr], tr.category_id in ^category_ids)
     |> preload([:category, :account])
   end
 
@@ -137,12 +140,12 @@ defmodule ExMoney.Transaction do
 
   def income_by_month_by_category(account_id, from, to, category_ids) do
     Transaction.by_month(account_id, from, to)
-    |> where([tr], tr.amount > 0 )
-    |> where([tr], tr.category_id in ^(category_ids))
+    |> where([tr], tr.amount > 0)
+    |> where([tr], tr.category_id in ^category_ids)
     |> preload([:category, :account])
   end
 
-  def income_by_month(account_id, from ,to) do
+  def income_by_month(account_id, from, to) do
     from tr in Transaction.by_month(account_id, from, to),
       join: c in assoc(tr, :category),
       where: tr.amount > 0,

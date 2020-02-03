@@ -12,7 +12,7 @@ defmodule ExMoney.Web.Settings.LoginView do
   end
 
   def disabled_next_page?(page_number, total_pages) do
-    if (page_number + 1) >= total_pages do
+    if page_number + 1 >= total_pages do
       "disabled"
     end
   end

@@ -8,8 +8,8 @@ defmodule ExMoney.Web.Api.V2.AccountController do
   def index(conn, _params) do
     user = Guardian.Plug.current_resource(conn)
 
-    accounts = Account.by_user_id(user.id) |> Repo.all
+    accounts = Account.by_user_id(user.id) |> Repo.all()
 
-    render conn, :index, accounts: accounts
+    render(conn, :index, accounts: accounts)
   end
 end

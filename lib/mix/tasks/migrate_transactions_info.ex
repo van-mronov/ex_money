@@ -12,7 +12,7 @@ defmodule Mix.Tasks.ExMoney.MigrateTransactionsInfo do
 
     infos = Repo.all(TransactionInfo)
 
-    Enum.each infos, fn(info) ->
+    Enum.each(infos, fn info ->
       info_map =
         info
         |> Map.from_struct()
@@ -23,7 +23,7 @@ defmodule Mix.Tasks.ExMoney.MigrateTransactionsInfo do
       transaction = Repo.get(Transaction, info.transaction_id)
 
       Transaction.update_changeset(transaction, %{extra: info_map})
-      |> Repo.update
-    end
+      |> Repo.update()
+    end)
   end
 end

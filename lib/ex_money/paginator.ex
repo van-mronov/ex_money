@@ -7,10 +7,11 @@ defmodule ExMoney.Paginator do
   alias ExMoney.Repo
 
   def paginate(query, params) do
-    page_number = params
-    |> Map.get("page", 1)
-    |> to_int(1)
-    |> avoid_negative_number
+    page_number =
+      params
+      |> Map.get("page", 1)
+      |> to_int(1)
+      |> avoid_negative_number
 
     page_size = params |> Map.get("page_size", 10) |> to_int(10)
 
@@ -31,9 +32,12 @@ defmodule ExMoney.Paginator do
     case float - t do
       neg when neg < 0 ->
         t
+
       pos when pos > 0 ->
         t + 1
-      _ -> t
+
+      _ ->
+        t
     end
   end
 
@@ -43,10 +47,11 @@ defmodule ExMoney.Paginator do
     query
     |> limit([_], ^page_size)
     |> offset([_], ^offset)
-    |> Repo.all
+    |> Repo.all()
   end
 
   defp to_int(i, _fallback) when is_integer(i), do: i
+
   defp to_int(s, fallback) when is_binary(s) do
     case Integer.parse(s) do
       {i, _} -> i
@@ -55,12 +60,13 @@ defmodule ExMoney.Paginator do
   end
 
   defp total_pages(query, page_size) do
-    count = query
-    |> exclude(:order_by)
-    |> exclude(:preload)
-    |> exclude(:select)
-    |> select([e], count(e.id))
-    |> Repo.one
+    count =
+      query
+      |> exclude(:order_by)
+      |> exclude(:preload)
+      |> exclude(:select)
+      |> select([e], count(e.id))
+      |> Repo.one()
 
     ceiling(count / page_size)
   end

@@ -36,7 +36,9 @@ defmodule ExMoney.Web.Callbacks.NotifyCallbackController do
     Login.update_changeset(
       login,
       %{last_refreshed_at: NaiveDateTime.utc_now()}
-    ) |> Repo.update!
+    )
+    |> Repo.update!()
+
     Logger.info("last_refreshed_at for login #{login.saltedge_login_id} has been updated")
   end
 end

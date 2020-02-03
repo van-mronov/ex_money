@@ -8,7 +8,7 @@ defmodule ExMoney.Web.Settings.AccountController do
   plug :scrub_params, "account" when action in [:create, :update]
 
   def index(conn, _params, user, _claims) do
-    accounts = Account.by_user_id(user.id) |> Repo.all
+    accounts = Account.by_user_id(user.id) |> Repo.all()
 
     render(conn, "index.html", accounts: accounts, navigation: "accounts", topbar: "settings")
   end
@@ -16,10 +16,11 @@ defmodule ExMoney.Web.Settings.AccountController do
   def show(conn, %{"id" => id}, _user, _claims) do
     account = Repo.get!(Account, id)
 
-    render conn, :show,
+    render(conn, :show,
       account: account,
       topbar: "dashboard",
       navigation: "accounts"
+    )
   end
 
   def new(conn, _params, _user, _claims) do
@@ -36,6 +37,7 @@ defmodule ExMoney.Web.Settings.AccountController do
         conn
         |> put_flash(:info, "Account created successfully.")
         |> redirect(to: settings_account_path(conn, :index))
+
       {:error, changeset} ->
         render(conn, "new.html", changeset: changeset, topbar: "settings", navigation: "accounts")
     end
@@ -44,6 +46,7 @@ defmodule ExMoney.Web.Settings.AccountController do
   def edit(conn, %{"id" => id}, _user, _claims) do
     account = Repo.get!(Account, id)
     changeset = Account.update_custom_changeset(account)
+
     render(conn, :edit,
       account: account,
       changeset: changeset,
@@ -63,6 +66,7 @@ defmodule ExMoney.Web.Settings.AccountController do
         conn
         |> put_flash(:info, "Account updated successfully.")
         |> redirect(to: settings_account_path(conn, :index))
+
       {:error, changeset} ->
         render(conn, :edit,
           account: account,

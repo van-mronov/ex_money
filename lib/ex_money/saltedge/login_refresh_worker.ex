@@ -6,21 +6,21 @@ defmodule ExMoney.Saltedge.LoginRefreshWorker do
   alias ExMoney.{Repo, Login}
 
   @interval 3_600_000
-  @mix_env Mix.env
+  @mix_env Mix.env()
 
   def start_link(_opts \\ []) do
     GenServer.start_link(__MODULE__, :ok, name: :login_refresh_worker)
   end
 
   def init(:ok) do
-    logins = Login.background_refresh() |> Repo.all
+    logins = Login.background_refresh() |> Repo.all()
 
     if @mix_env == :dev or logins == [] do
       :ignore
     else
-      Enum.each logins, fn(login) ->
+      Enum.each(logins, fn login ->
         Process.send_after(self(), {:refresh, login.id}, 100)
-      end
+      end)
 
       {:ok, %{}}
     end
@@ -35,6 +35,7 @@ defmodule ExMoney.Saltedge.LoginRefreshWorker do
         refresh_login(login)
 
         Process.send_after(self(), {:refresh, login_id}, @interval)
+
       seconds when seconds < 3600 ->
         next_run = 3600 - seconds
 
@@ -55,12 +56,21 @@ defmodule ExMoney.Saltedge.LoginRefreshWorker do
       { "data": { "fetch_type": "#{fetch_type}" }}
     """
 
-    result = ExMoney.Saltedge.Client.request(:put, "logins/#{login.saltedge_login_id}/refresh", body)
+    result =
+      ExMoney.Saltedge.Client.request(:put, "logins/#{login.saltedge_login_id}/refresh", body)
+
     case result do
       {:error, _reason} ->
-        Logger.error("Could not refresh login #{login.saltedge_login_id} with fetch_type #{fetch_type}")
+        Logger.error(
+          "Could not refresh login #{login.saltedge_login_id} with fetch_type #{fetch_type}"
+        )
+
       {:ok, _response} ->
-        Logger.info("Login #{login.saltedge_login_id} has been successfully refreshed with fetch_type #{fetch_type}!")
+        Logger.info(
+          "Login #{login.saltedge_login_id} has been successfully refreshed with fetch_type #{
+            fetch_type
+          }!"
+        )
     end
 
     set_fetch_all_tried(login, fetch_type)
@@ -79,8 +89,9 @@ defmodule ExMoney.Saltedge.LoginRefreshWorker do
   defp fetch_type(fetch_all_tried) when fetch_all_tried == false, do: "full"
 
   defp set_fetch_all_tried(login, "recent"), do: login
+
   defp set_fetch_all_tried(login, "full") do
     Login.update_changeset(login, %{fetch_all_tried: true})
-    |> Repo.update!
+    |> Repo.update!()
   end
 end

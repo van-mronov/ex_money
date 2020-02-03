@@ -3,7 +3,7 @@ defmodule ExMoney.Web.Mobile.TransactionView do
   alias ExMoney.Transaction
 
   def balance(transactions) do
-    Enum.reduce(transactions, Decimal.new(0), fn(transaction, acc) ->
+    Enum.reduce(transactions, Decimal.new(0), fn transaction, acc ->
       Decimal.add(acc, transaction.amount)
     end)
   end
@@ -19,7 +19,7 @@ defmodule ExMoney.Web.Mobile.TransactionView do
   def render("delete.json", %{account_id: account_id, new_balance: new_balance}) do
     %{
       account_id: account_id,
-      new_balance: new_balance,
+      new_balance: new_balance
     }
   end
 

@@ -25,7 +25,6 @@ defmodule ExMoney.Web.ChannelCase do
       import Ecto.Changetset
       import Ecto.Query, only: [from: 1, from: 2]
 
-
       # The default endpoint for testing
       @endpoint ExMoney.Web.Endpoint
     end

@@ -7,12 +7,13 @@ defmodule ExMoney.Web.Settings.LoginController do
 
   def index(conn, _params) do
     user = Guardian.Plug.current_resource(conn)
-    logins = Login.by_user_id(user.id) |> Repo.all
+    logins = Login.by_user_id(user.id) |> Repo.all()
 
-    render conn, :index,
+    render(conn, :index,
       logins: logins,
       navigation: "logins",
       topbar: "settings"
+    )
   end
 
   def delete(conn, %{"id" => id}) do

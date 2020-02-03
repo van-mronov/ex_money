@@ -5,7 +5,7 @@ defmodule ExMoney.DateHelper do
   end
 
   def parse_date(month) when month == "" or is_nil(month) do
-    Timex.local
+    Timex.local()
   end
 
   def parse_date(month) do
@@ -24,7 +24,6 @@ defmodule ExMoney.DateHelper do
     with {:ok, ex_date} <- Date.new(date.year, date.month, 1),
          days_in_month <- Date.days_in_month(ex_date),
          {:ok, date} <- Date.new(date.year, date.month, days_in_month) do
-
       Date.to_string(date)
     end
   end

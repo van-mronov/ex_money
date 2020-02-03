@@ -18,8 +18,10 @@ defmodule ExMoney.Web.Mobile.SessionController do
 
   def create(conn, params = %{}) do
     user = Repo.one(User.by_email(params["user"]["email"] || ""))
+
     if user do
       changeset = User.login_changeset(user, params["user"])
+
       if changeset.valid? do
         store_last_login_at(user.last_login_at)
         update_last_login_at(user)
@@ -36,7 +38,7 @@ defmodule ExMoney.Web.Mobile.SessionController do
 
   defp update_last_login_at(user) do
     User.update_changeset(user, %{last_login_at: NaiveDateTime.utc_now()})
-    |> Repo.update
+    |> Repo.update()
   end
 
   defp store_last_login_at(timestamp) do

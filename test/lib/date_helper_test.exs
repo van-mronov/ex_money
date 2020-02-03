@@ -6,17 +6,17 @@ defmodule ExMoney.DateHelperTest do
   test "parse_date when argument is nil" do
     result = DateHelper.parse_date(nil)
 
-    assert result.year == Timex.local.year
-    assert result.month == Timex.local.month
-    assert result.day == Timex.local.day
+    assert result.year == Timex.local().year
+    assert result.month == Timex.local().month
+    assert result.day == Timex.local().day
   end
 
   test "parse_date when argument is empty" do
     result = DateHelper.parse_date("")
 
-    assert result.year == Timex.local.year
-    assert result.month == Timex.local.month
-    assert result.day == Timex.local.day
+    assert result.year == Timex.local().year
+    assert result.month == Timex.local().month
+    assert result.day == Timex.local().day
   end
 
   test "first_day_of_month" do

@@ -33,31 +33,23 @@ defmodule ExMoney.Category do
   end
 
   def list_with_hidden do
-    from c in Category,
-      order_by: c.name, preload: [:parent]
+    from c in Category, order_by: c.name, preload: [:parent]
   end
 
   def list do
-    from c in Category,
-      where: c.hidden != true,
-      order_by: c.name, preload: [:parent]
+    from c in Category, where: c.hidden != true, order_by: c.name, preload: [:parent]
   end
 
   def by_id_with_parent(id) do
-    from c in Category,
-      where: c.hidden != true,
-      where: c.id == ^id, preload: [:parent]
+    from c in Category, where: c.hidden != true, where: c.id == ^id, preload: [:parent]
   end
 
   def by_name(name) do
-    from c in Category,
-      where: c.hidden != true,
-      where: c.name == ^name, limit: 1
+    from c in Category, where: c.hidden != true, where: c.name == ^name, limit: 1
   end
 
   def by_name_with_hidden(name) do
-    from c in Category,
-      where: c.name == ^name, limit: 1
+    from c in Category, where: c.name == ^name, limit: 1
   end
 
   def parents_with_hidden do
@@ -85,7 +77,7 @@ defmodule ExMoney.Category do
 
   def by_ids(ids) do
     from c in Category,
-      where: c.id in ^(ids)
+      where: c.id in ^ids
   end
 
   def sub_categories_by_id(id) do
@@ -110,9 +102,9 @@ defmodule ExMoney.Category do
   end
 
   def generate_color do
-    red = div((:rand.uniform(256) + 255), 2)
-    green = div((:rand.uniform(256) + 255), 2)
-    blue = div((:rand.uniform(256) + 255), 2)
+    red = div(:rand.uniform(256) + 255, 2)
+    green = div(:rand.uniform(256) + 255, 2)
+    blue = div(:rand.uniform(256) + 255, 2)
 
     "rgb(#{red}, #{green}, #{blue})"
   end
@@ -120,9 +112,11 @@ defmodule ExMoney.Category do
   defp put_humanized_name(changeset) do
     case Ecto.Changeset.fetch_change(changeset, :name) do
       {:ok, name} ->
-        humanized_name = String.replace(name, "_", " ") |> String.capitalize
+        humanized_name = String.replace(name, "_", " ") |> String.capitalize()
         Ecto.Changeset.put_change(changeset, :humanized_name, humanized_name)
-      :error -> changeset
+
+      :error ->
+        changeset
     end
   end
 end

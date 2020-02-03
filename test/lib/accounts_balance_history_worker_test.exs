@@ -18,7 +18,7 @@ defmodule ExMoney.AccountsBalanceHistoryWorkerTest do
   test "store current balance", %{account_1: account_1, account_2: account_2} do
     assert :stored == GenServer.call(:accounts_balance_history_worker, :store_current_balance)
 
-    h = Repo.all(BalanceHistory) |> List.first
+    h = Repo.all(BalanceHistory) |> List.first()
 
     assert h.state == %{to_string(account_1.id) => "10", to_string(account_2.id) => "20"}
   end

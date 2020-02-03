@@ -9,12 +9,12 @@ defmodule ExMoney.Web.Mobile.BudgetController do
 
   def index(conn, params) do
     user = Guardian.Plug.current_resource(conn)
-    current_budget = Budget.current_by_user_id(user.id) |> Repo.one
+    current_budget = Budget.current_by_user_id(user.id) |> Repo.one()
 
     if current_budget do
       _index(conn, params, current_budget)
     else
-      render conn, :setup
+      render(conn, :setup)
     end
   end
 
@@ -24,29 +24,34 @@ defmodule ExMoney.Web.Mobile.BudgetController do
     to = DateHelper.last_day_of_month(parsed_date)
 
     account_ids = current_budget.accounts
-    month_transactions = Transaction.by_month(account_ids, from, to)
-    |> Repo.all
 
-    categories = Transaction.group_by_month_by_category_without_withdraw(account_ids, from, to)
-    |> Repo.all
+    month_transactions =
+      Transaction.by_month(account_ids, from, to)
+      |> Repo.all()
+
+    categories =
+      Transaction.group_by_month_by_category_without_withdraw(account_ids, from, to)
+      |> Repo.all()
 
     current_month = DateHelper.current_month(parsed_date)
     previous_month = DateHelper.previous_month(parsed_date)
     next_month = DateHelper.next_month(parsed_date)
 
-    currency_label = if month_transactions != [] do
-      List.first(month_transactions).account.currency_label
-    else
-      ""
-    end
+    currency_label =
+      if month_transactions != [] do
+        List.first(month_transactions).account.currency_label
+      else
+        ""
+      end
 
-    categories_limits = Enum.reduce current_budget.items, %{}, fn({item_id, limit}, acc) ->
-      {item_id, _} = Integer.parse(item_id)
-      {limit, _} = Integer.parse(limit)
-      Map.put(acc, item_id, limit)
-    end
+    categories_limits =
+      Enum.reduce(current_budget.items, %{}, fn {item_id, limit}, acc ->
+        {item_id, _} = Integer.parse(item_id)
+        {limit, _} = Integer.parse(limit)
+        Map.put(acc, item_id, limit)
+      end)
 
-    render conn, :index,
+    render(conn, :index,
       month_transactions: month_transactions,
       categories_limits: categories_limits,
       currency_label: currency_label,
@@ -54,11 +59,12 @@ defmodule ExMoney.Web.Mobile.BudgetController do
       current_month: current_month,
       previous_month: previous_month,
       next_month: next_month
+    )
   end
 
   def expenses(conn, %{"date" => date}) do
     user = Guardian.Plug.current_resource(conn)
-    current_budget = Budget.current_by_user_id(user.id) |> Repo.one
+    current_budget = Budget.current_by_user_id(user.id) |> Repo.one()
     parsed_date = DateHelper.parse_date(date)
     from = DateHelper.first_day_of_month(parsed_date)
     to = DateHelper.last_day_of_month(parsed_date)
@@ -70,15 +76,16 @@ defmodule ExMoney.Web.Mobile.BudgetController do
 
     from = URI.encode_www_form("/m/budget/expenses?date=#{date}")
 
-    render conn, :expenses,
+    render(conn, :expenses,
       expenses: expenses,
       date: %{label: formatted_date, value: date},
       from: from
+    )
   end
 
   def income(conn, %{"date" => date}) do
     user = Guardian.Plug.current_resource(conn)
-    current_budget = Budget.current_by_user_id(user.id) |> Repo.one
+    current_budget = Budget.current_by_user_id(user.id) |> Repo.one()
     parsed_date = DateHelper.parse_date(date)
     from = DateHelper.first_day_of_month(parsed_date)
     to = DateHelper.last_day_of_month(parsed_date)
@@ -90,17 +97,18 @@ defmodule ExMoney.Web.Mobile.BudgetController do
 
     from = URI.encode_www_form("/m/budget/income?date=#{date}")
 
-    render conn, :income,
+    render(conn, :income,
       income: income,
       date: %{label: formatted_date, value: date},
       from: from
+    )
   end
 
   defp fetch_and_process_transactions(scope) do
     scope
-    |> Repo.all
-    |> Enum.group_by(fn(transaction) -> transaction.made_on end)
-    |> Enum.sort(fn({date_1, _transactions}, {date_2, _transaction}) ->
+    |> Repo.all()
+    |> Enum.group_by(fn transaction -> transaction.made_on end)
+    |> Enum.sort(fn {date_1, _transactions}, {date_2, _transaction} ->
       Date.compare(date_1, date_2) != :lt
     end)
   end

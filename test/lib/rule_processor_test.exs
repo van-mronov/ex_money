@@ -15,11 +15,13 @@ defmodule ExMoney.RuleProcessorTest do
   describe "process callback" do
     setup do
       account = insert(:account)
-      transaction = insert(:transaction,
-        description: "bar foo baz",
-        account: account,
-        saltedge_account_id: account.saltedge_account_id
-      )
+
+      transaction =
+        insert(:transaction,
+          description: "bar foo baz",
+          account: account,
+          saltedge_account_id: account.saltedge_account_id
+        )
 
       {:ok, transaction: transaction}
     end
@@ -93,12 +95,15 @@ defmodule ExMoney.RuleProcessorTest do
       saltedge_account_id = transaction.account.saltedge_account_id
 
       cash_account = insert(:account)
-      transfer_transaction = insert(:transaction,
-        description: "bar foo baz",
-        account: transaction.account,
-        saltedge_account_id: saltedge_account_id,
-        amount: Decimal.new(-10)
-      )
+
+      transfer_transaction =
+        insert(:transaction,
+          description: "bar foo baz",
+          account: transaction.account,
+          saltedge_account_id: saltedge_account_id,
+          amount: Decimal.new(-10)
+        )
+
       category = insert(:category, name: "withdraw")
 
       insert(:rule,
@@ -112,7 +117,10 @@ defmodule ExMoney.RuleProcessorTest do
       RuleProcessor.handle_cast({:process, transfer_transaction.id}, %{})
 
       updated_transaction = Repo.get(Transaction, transfer_transaction.id)
-      cash_transaction = Repo.get_by(Transaction, category_id: category.id, account_id: cash_account.id)
+
+      cash_transaction =
+        Repo.get_by(Transaction, category_id: category.id, account_id: cash_account.id)
+
       saltedge_transaction = Repo.get_by(Transaction, id: transfer_transaction.id)
 
       assert updated_transaction.rule_applied
@@ -124,33 +132,41 @@ defmodule ExMoney.RuleProcessorTest do
 
   describe "process_all callback" do
     setup do
-      rule = insert(:rule, pattern: "foo", type: "assign_category", target_id: insert(:category).id)
+      rule =
+        insert(:rule, pattern: "foo", type: "assign_category", target_id: insert(:category).id)
 
       {:ok, rule: rule}
     end
 
     test "applies rule for all matched transactions", %{rule: rule} do
-      tr_1 = insert(:transaction,
-        description: "qwe foo something",
-        account: rule.account,
-        saltedge_account_id: rule.account.saltedge_account_id
-      )
-      tr_2 = insert(:transaction,
-        extra: %{payee: "foo"},
-        account: rule.account,
-        saltedge_account_id: rule.account.saltedge_account_id
-      )
-      tr_3 = insert(:transaction,
-        description: "baz",
-        account: rule.account,
-        saltedge_account_id: rule.account.saltedge_account_id
-      )
-      tr_4 = insert(:transaction,
-        description: "foo",
-        rule_applied: true,
-        account: rule.account,
-        saltedge_account_id: rule.account.saltedge_account_id
-      )
+      tr_1 =
+        insert(:transaction,
+          description: "qwe foo something",
+          account: rule.account,
+          saltedge_account_id: rule.account.saltedge_account_id
+        )
+
+      tr_2 =
+        insert(:transaction,
+          extra: %{payee: "foo"},
+          account: rule.account,
+          saltedge_account_id: rule.account.saltedge_account_id
+        )
+
+      tr_3 =
+        insert(:transaction,
+          description: "baz",
+          account: rule.account,
+          saltedge_account_id: rule.account.saltedge_account_id
+        )
+
+      tr_4 =
+        insert(:transaction,
+          description: "foo",
+          rule_applied: true,
+          account: rule.account,
+          saltedge_account_id: rule.account.saltedge_account_id
+        )
 
       RuleProcessor.handle_cast({:process_all, rule.id}, %{})
 

@@ -31,7 +31,7 @@ defmodule ExMoney.Budget do
   def current_by_user_id(user_id) do
     from b in Budget,
       where: b.user_id == ^user_id,
-      where: b.start_date <= ^Timex.local,
-      where: b.end_date >= ^Timex.local
+      where: b.start_date <= ^Timex.local(),
+      where: b.end_date >= ^Timex.local()
   end
 end

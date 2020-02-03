@@ -7,15 +7,15 @@ defmodule ExMoney.Web.Saltedge.LoginController do
 
   def new(conn, _params) do
     user = Guardian.Plug.current_resource(conn)
-    body =
-      """
-        {
-          "data": {
-            "customer_id": "#{user.saltedge_customer_id}",
-            "fetch_type": "recent"
-          }
+
+    body = """
+      {
+        "data": {
+          "customer_id": "#{user.saltedge_customer_id}",
+          "fetch_type": "recent"
         }
-      """
+      }
+    """
 
     {:ok, response} = ExMoney.Saltedge.Client.request(:post, "tokens/create", body)
 
@@ -24,7 +24,7 @@ defmodule ExMoney.Web.Saltedge.LoginController do
 
     connect_url = response["data"]["connect_url"]
 
-    redirect conn, external: connect_url
+    redirect(conn, external: connect_url)
   end
 
   def sync(conn, %{"id" => login_id}) do

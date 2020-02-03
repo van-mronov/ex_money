@@ -20,6 +20,7 @@ defmodule ExMoney.Scheduler do
         store_accounts_balance()
         stop_worker(:login_refresh_worker)
         stop_worker(:idle_worker)
+
       false ->
         Process.send_after(self(), :schedule, @interval)
     end

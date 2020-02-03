@@ -37,7 +37,7 @@ defmodule ExMoney.Saltedge.Client do
     secret = Application.get_env(:ex_money, :saltedge_secret)
 
     url = base_url() <> "/" <> endpoint
-    str_method = to_string(method) |> String.upcase
+    str_method = to_string(method) |> String.upcase()
     request = "#{expires_at()}|#{str_method}|#{url}|#{body}"
 
     headers = [
@@ -52,8 +52,10 @@ defmodule ExMoney.Saltedge.Client do
     case HTTPoison.request(method, url, body, headers) do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
         {:ok, Poison.decode!(body)}
+
       {:ok, %HTTPoison.Response{body: body}} ->
         {:error, Poison.decode!(body)}
+
       {:error, %HTTPoison.Error{reason: reason}} ->
         {:error, reason}
     end
@@ -61,13 +63,11 @@ defmodule ExMoney.Saltedge.Client do
 
   def signature(url) do
     :public_key.sign(url, :sha256, read_private_key())
-    |> Base.encode64
+    |> Base.encode64()
   end
 
   defp read_private_key do
-    private_key()
-    |> :public_key.pem_decode
-    |> hd() |> :public_key.pem_entry_decode
+    private_key() |> :public_key.pem_decode() |> hd() |> :public_key.pem_entry_decode()
   end
 
   defp private_key() do
@@ -79,7 +79,7 @@ defmodule ExMoney.Saltedge.Client do
   end
 
   defp expires_at do
-    {mgsec, sec, _mcs} = :os.timestamp
+    {mgsec, sec, _mcs} = :os.timestamp()
 
     mgsec * 1_000_000 + sec + 60
   end

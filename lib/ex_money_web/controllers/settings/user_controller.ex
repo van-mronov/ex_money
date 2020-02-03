@@ -11,11 +11,12 @@ defmodule ExMoney.Web.Settings.UserController do
 
     changeset = User.update_changeset(user)
 
-    render conn, :edit,
+    render(conn, :edit,
       user: user,
       changeset: changeset,
       navigation: "account",
       topbar: "settings"
+    )
   end
 
   def update(conn, %{"user" => user_params}) do
@@ -27,12 +28,14 @@ defmodule ExMoney.Web.Settings.UserController do
         conn
         |> put_flash(:info, "User updated successfully.")
         |> redirect(to: settings_user_path(conn, :edit))
+
       {:error, changeset} ->
-        render conn, :edit,
+        render(conn, :edit,
           user: user,
           changeset: changeset,
           navigation: "account",
           topbar: "settings"
+        )
     end
   end
 end

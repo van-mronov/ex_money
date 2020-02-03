@@ -7,27 +7,30 @@ defmodule ExMoney.Web.Mobile.FavouriteTransactionController do
 
   def index(conn, _params) do
     user = Guardian.Plug.current_resource(conn)
-    fav_transactions = FavouriteTransaction.by_user_with_category(user.id) |> Repo.all
+    fav_transactions = FavouriteTransaction.by_user_with_category(user.id) |> Repo.all()
 
-    render conn, :index,
-      fav_transactions: fav_transactions
+    render(conn, :index, fav_transactions: fav_transactions)
   end
 
   def new(conn, _params) do
     categories = categories_list()
-    uncategorized = Map.keys(categories)
-    |> Enum.find(fn({name, _id}) -> name == "Uncategorized" end)
+
+    uncategorized =
+      Map.keys(categories)
+      |> Enum.find(fn {name, _id} -> name == "Uncategorized" end)
+
     categories = Map.delete(categories, uncategorized)
     categories = [{uncategorized, []} | Map.to_list(categories)]
 
-    accounts = Account.only_custom |> Repo.all
+    accounts = Account.only_custom() |> Repo.all()
 
     changeset = FavouriteTransaction.changeset(%FavouriteTransaction{})
 
-    render conn, :new,
+    render(conn, :new,
       categories: categories,
       changeset: changeset,
       accounts: accounts
+    )
   end
 
   def fav(conn, %{"favourite_transaction_id" => id}) do
@@ -54,6 +57,7 @@ defmodule ExMoney.Web.Mobile.FavouriteTransactionController do
     case Repo.insert(changeset) do
       {:ok, _transaction} ->
         send_resp(conn, 200, "")
+
       {:error, _changeset} ->
         send_resp(conn, 422, "Something went wrong, check server logs")
     end
@@ -69,10 +73,12 @@ defmodule ExMoney.Web.Mobile.FavouriteTransactionController do
   defp categories_list do
     categories_dict = Repo.all(Category)
 
-    Enum.reduce(categories_dict, %{}, fn(category, acc) ->
+    Enum.reduce(categories_dict, %{}, fn category, acc ->
       if is_nil(category.parent_id) do
-        sub_categories = Enum.filter(categories_dict, fn(c) -> c.parent_id == category.id end)
-        |> Enum.map(fn(sub_category) -> {sub_category.humanized_name, sub_category.id} end)
+        sub_categories =
+          Enum.filter(categories_dict, fn c -> c.parent_id == category.id end)
+          |> Enum.map(fn sub_category -> {sub_category.humanized_name, sub_category.id} end)
+
         Map.put(acc, {category.humanized_name, category.id}, sub_categories)
       else
         acc

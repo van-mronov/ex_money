@@ -15,16 +15,22 @@ defmodule ExMoney.Web.Callbacks.InteractiveCallbackController do
 
     login = conn.assigns[:login]
 
-    changeset = Login.interactive_callback_changeset(login, %{
-      stage: stage,
-      interactive_fields_names: interactive_fields_names,
-      interactive_html: html
-    })
+    changeset =
+      Login.interactive_callback_changeset(login, %{
+        stage: stage,
+        interactive_fields_names: interactive_fields_names,
+        interactive_html: html
+      })
 
     with {:ok, _} <- Repo.update(changeset) do
       pid = get_channel_pid(conn.assigns[:user].id)
       store_interactive_field_names(conn.assigns[:user].id, interactive_fields_names)
-      Process.send_after(pid, {:interactive_callback_received, html, interactive_fields_names}, 10)
+
+      Process.send_after(
+        pid,
+        {:interactive_callback_received, html, interactive_fields_names},
+        10
+      )
     end
 
     put_resp_content_type(conn, "application/json")

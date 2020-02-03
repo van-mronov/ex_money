@@ -2,11 +2,15 @@ defmodule ExMoney.Web.Endpoint do
   use Phoenix.Endpoint, otp_app: :ex_money
 
   socket "/refresh_socket", ExMoney.RefreshSocket,
-    websocket: true, # Phoenix.Transports.WebSocket
-    longpoll: true # Phoenix.Transports.LongPoll
+    # Phoenix.Transports.WebSocket
+    websocket: true,
+    # Phoenix.Transports.LongPoll
+    longpoll: true
 
   plug Plug.Static,
-    at: "/", from: :ex_money, gzip: false,
+    at: "/",
+    from: :ex_money,
+    gzip: false,
     only: ~w(css fonts images js favicon.ico robots.txt)
 
   if code_reloading? do

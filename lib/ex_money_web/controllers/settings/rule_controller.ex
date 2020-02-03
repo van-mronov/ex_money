@@ -7,49 +7,62 @@ defmodule ExMoney.Web.Settings.RuleController do
   plug :scrub_params, "rule" when action in [:create, :update]
 
   def index(conn, _params) do
-    rules = Rule.with_account_ordered |> Repo.all
+    rules = Rule.with_account_ordered() |> Repo.all()
 
-    map = Enum.reduce(rules, %{account_ids: [], category_ids: []}, fn(rule, acc) ->
-      {_, acc} = case rule.type do
-        "assign_category" -> Map.get_and_update(acc, :category_ids, fn(current) -> {current, [rule.target_id | current]} end)
-        "withdraw_to_cash" -> Map.get_and_update(acc, :account_ids, fn(current) -> {current, [rule.target_id | current]} end)
-      end
+    map =
+      Enum.reduce(rules, %{account_ids: [], category_ids: []}, fn rule, acc ->
+        {_, acc} =
+          case rule.type do
+            "assign_category" ->
+              Map.get_and_update(acc, :category_ids, fn current ->
+                {current, [rule.target_id | current]}
+              end)
 
-      acc
-    end)
+            "withdraw_to_cash" ->
+              Map.get_and_update(acc, :account_ids, fn current ->
+                {current, [rule.target_id | current]}
+              end)
+          end
 
-    categories = map.category_ids
-    |> Category.by_ids
-    |> Repo.all
-    |> Enum.reduce(%{}, fn(c, acc) -> Map.put(acc, c.id, c) end)
+        acc
+      end)
 
-    accounts = map.account_ids
-    |> List.flatten
-    |> Account.by_ids
-    |> Repo.all
-    |> Enum.reduce(%{}, fn(a, acc) -> Map.put(acc, a.id, a) end)
+    categories =
+      map.category_ids
+      |> Category.by_ids()
+      |> Repo.all()
+      |> Enum.reduce(%{}, fn c, acc -> Map.put(acc, c.id, c) end)
 
-    render conn, :index,
+    accounts =
+      map.account_ids
+      |> List.flatten()
+      |> Account.by_ids()
+      |> Repo.all()
+      |> Enum.reduce(%{}, fn a, acc -> Map.put(acc, a.id, a) end)
+
+    render(conn, :index,
       rules: rules,
       categories: categories,
       accounts: accounts,
       topbar: "settings",
       navigation: "rules"
+    )
   end
 
   def new(conn, params) do
     type = params["type"]
     target = build_target(type)
-    accounts = Account.only_saltedge |> Repo.all
+    accounts = Account.only_saltedge() |> Repo.all()
     changeset = Rule.changeset(%Rule{})
 
-    render conn, :new,
+    render(conn, :new,
       changeset: changeset,
       target: target,
       type: type,
       accounts: accounts,
       topbar: "settings",
       navigation: "rules"
+    )
   end
 
   def create(conn, %{"rule" => rule_params}) do
@@ -62,26 +75,30 @@ defmodule ExMoney.Web.Settings.RuleController do
         conn
         |> put_flash(:info, "Rule created successfully.")
         |> redirect(to: settings_rule_path(conn, :index))
+
       {:error, changeset} ->
-        accounts = Account.only_saltedge |> Repo.all
+        accounts = Account.only_saltedge() |> Repo.all()
         target = build_target(rule_params["type"])
 
-        render conn, :new,
+        render(conn, :new,
           changeset: changeset,
           accounts: accounts,
           type: rule_params["type"],
           target: target,
           topbar: "settings",
           navigation: "rules"
+        )
     end
   end
 
   def show(conn, %{"id" => id}) do
     rule = Repo.get!(Rule, id)
-    render conn, :show,
+
+    render(conn, :show,
       rule: rule,
       topbar: "settings",
       navigation: "rules"
+    )
   end
 
   def edit(conn, %{"id" => id} = params) do
@@ -89,10 +106,10 @@ defmodule ExMoney.Web.Settings.RuleController do
 
     type = params["type"]
     target = build_target(type)
-    accounts = Account.only_saltedge |> Repo.all
+    accounts = Account.only_saltedge() |> Repo.all()
     changeset = Rule.changeset(rule)
 
-    render conn, :edit,
+    render(conn, :edit,
       rule: rule,
       changeset: changeset,
       target: target,
@@ -100,6 +117,7 @@ defmodule ExMoney.Web.Settings.RuleController do
       accounts: accounts,
       topbar: "settings",
       navigation: "rules"
+    )
   end
 
   def update(conn, %{"id" => id, "rule" => rule_params}) do
@@ -115,9 +133,11 @@ defmodule ExMoney.Web.Settings.RuleController do
         conn
         |> put_flash(:info, "Rule updated successfully.")
         |> redirect(to: settings_rule_path(conn, :index))
+
       {:error, changeset} ->
-        accounts = Account.only_saltedge |> Repo.all
-        render conn, :edit,
+        accounts = Account.only_saltedge() |> Repo.all()
+
+        render(conn, :edit,
           rule: rule,
           type: type,
           accounts: accounts,
@@ -125,6 +145,7 @@ defmodule ExMoney.Web.Settings.RuleController do
           target: target,
           topbar: "settings",
           navigation: "rules"
+        )
     end
   end
 
@@ -139,26 +160,33 @@ defmodule ExMoney.Web.Settings.RuleController do
   end
 
   defp apply_rule_for_all("false", _rule), do: :nothing
+
   defp apply_rule_for_all("true", rule) do
     GenServer.cast(:rule_processor, {:process_all, rule.id})
   end
 
   defp build_target(type) do
     case type do
-      nil -> []
+      nil ->
+        []
+
       "assign_category" ->
         categories = Repo.all(Category)
 
-        Enum.reduce(categories, %{}, fn(category, acc) ->
+        Enum.reduce(categories, %{}, fn category, acc ->
           if is_nil(category.parent_id) do
-            sub_categories = Enum.filter(categories, fn(c) -> c.parent_id == category.id end)
-            |> Enum.map(fn(sub_category) -> {sub_category.humanized_name, sub_category.id} end)
+            sub_categories =
+              Enum.filter(categories, fn c -> c.parent_id == category.id end)
+              |> Enum.map(fn sub_category -> {sub_category.humanized_name, sub_category.id} end)
+
             Map.put(acc, {category.humanized_name, category.id}, sub_categories)
           else
             acc
           end
         end)
-      "withdraw_to_cash" -> Repo.all(Account.only_custom)
+
+      "withdraw_to_cash" ->
+        Repo.all(Account.only_custom())
     end
   end
 end

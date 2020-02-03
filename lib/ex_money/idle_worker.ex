@@ -1,7 +1,8 @@
 defmodule ExMoney.IdleWorker do
   use GenServer
 
-  @interval 25 * 60 * 1000 # 25 min
+  # 25 min
+  @interval 25 * 60 * 1000
 
   def start_link(_opts \\ []) do
     GenServer.start_link(__MODULE__, :ok, name: :idle_worker)
@@ -14,7 +15,7 @@ defmodule ExMoney.IdleWorker do
   end
 
   def handle_info(:keep_alive, state) do
-    HTTPoison.request(:get, "https://#{System.get_env("HOME_URL")}", "", [], [recv_timeout: 30000])
+    HTTPoison.request(:get, "https://#{System.get_env("HOME_URL")}", "", [], recv_timeout: 30000)
 
     Process.send_after(self(), :keep_alive, @interval)
 

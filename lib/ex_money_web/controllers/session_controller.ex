@@ -12,8 +12,10 @@ defmodule ExMoney.Web.SessionController do
 
   def create(conn, params = %{}) do
     user = Repo.one(User.by_email(params["user"]["email"] || ""))
+
     if user do
       changeset = User.login_changeset(user, params["user"])
+
       if changeset.valid? do
         update_last_login_at(user)
 
@@ -23,8 +25,10 @@ defmodule ExMoney.Web.SessionController do
         render(conn, :new, changeset: changeset)
       end
     else
-      changeset = User.login_changeset(%User{})
-      |> Ecto.Changeset.add_error(:login, "not found")
+      changeset =
+        User.login_changeset(%User{})
+        |> Ecto.Changeset.add_error(:login, "not found")
+
       render(conn, :new, changeset: changeset)
     end
   end
@@ -41,6 +45,6 @@ defmodule ExMoney.Web.SessionController do
 
   defp update_last_login_at(user) do
     User.update_changeset(user, %{last_login_at: NaiveDateTime.utc_now()})
-    |> Repo.update
+    |> Repo.update()
   end
 end

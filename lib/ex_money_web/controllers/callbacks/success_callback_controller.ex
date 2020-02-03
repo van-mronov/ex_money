@@ -20,8 +20,13 @@ defmodule ExMoney.Web.Callbacks.SuccessCallbackController do
 
   defp create_login(saltedge_login_id, conn) do
     user = conn.assigns[:user]
-    changeset = Ecto.build_assoc(user, :logins)
-    |> Login.success_callback_changeset(%{saltedge_login_id: saltedge_login_id, user_id: user.id})
+
+    changeset =
+      Ecto.build_assoc(user, :logins)
+      |> Login.success_callback_changeset(%{
+        saltedge_login_id: saltedge_login_id,
+        user_id: user.id
+      })
 
     with {:ok, login} <- Repo.insert(changeset) do
       update_login_last_refreshed_at(login)
@@ -49,7 +54,9 @@ defmodule ExMoney.Web.Callbacks.SuccessCallbackController do
     Login.update_changeset(
       login,
       %{last_refreshed_at: NaiveDateTime.utc_now()}
-    ) |> Repo.update!
+    )
+    |> Repo.update!()
+
     Logger.info("last_refreshed_at for login #{login.saltedge_login_id} has been updated")
   end
 end

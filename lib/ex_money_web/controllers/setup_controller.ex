@@ -12,6 +12,7 @@ defmodule ExMoney.Web.SetupController do
 
   def complete(conn, params = %{}) do
     changeset = User.create_changeset(%User{}, params["user"])
+
     if changeset.valid? do
       user = Repo.insert!(changeset)
 

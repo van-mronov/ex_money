@@ -20,12 +20,14 @@ defmodule ExMoney.Web.Callbacks.FailureCallbackController do
 
   defp create_login(conn) do
     login_id = conn.params["data"]["login_id"]
-    changeset = Ecto.build_assoc(conn.assigns[:user], :logins)
-    |> Login.failure_callback_changeset(%{
-      saltedge_login_id: login_id,
-      last_fail_error_class: conn.params["data"]["error_class"],
-      last_fail_message: conn.params["data"]["error_message"]
-    })
+
+    changeset =
+      Ecto.build_assoc(conn.assigns[:user], :logins)
+      |> Login.failure_callback_changeset(%{
+        saltedge_login_id: login_id,
+        last_fail_error_class: conn.params["data"]["error_class"],
+        last_fail_message: conn.params["data"]["error_message"]
+      })
 
     Repo.insert(changeset)
   end
@@ -36,7 +38,7 @@ defmodule ExMoney.Web.Callbacks.FailureCallbackController do
       last_fail_message: conn.params["data"]["error_message"]
     }
 
-    Login.failure_callback_changeset(login, params) |> Repo.update
+    Login.failure_callback_changeset(login, params) |> Repo.update()
 
     interactive_done(conn.assigns[:user].id)
   end

@@ -11,7 +11,6 @@ config :ex_money, ExMoney.Repo,
   adapter: Ecto.Adapters.Postgres,
   pool: Ecto.Adapters.SQL.Sandbox
 
-config :ex_money, :saltedge,
-  private_key_path: "test/support/fake_key"
+config :ex_money, :saltedge, private_key_path: "test/support/fake_key"
 
 import_config "test.secret.exs"

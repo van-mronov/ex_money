@@ -4,7 +4,7 @@ defmodule ExMoney.Saltedge.ClientTest do
   import Plug.Conn
 
   setup do
-    bypass = Bypass.open
+    bypass = Bypass.open()
 
     new_config =
       Application.get_env(:ex_money, :saltedge)
@@ -16,7 +16,7 @@ defmodule ExMoney.Saltedge.ClientTest do
   end
 
   test "a request with proper headers", %{bypass: bypass} do
-    Bypass.expect bypass, fn conn ->
+    Bypass.expect(bypass, fn conn ->
       assert "/endpoint" == conn.request_path
       assert "GET" == conn.method
 
@@ -29,18 +29,18 @@ defmodule ExMoney.Saltedge.ClientTest do
       assert ["application/json"] == get_req_header(conn, "content-type")
 
       Plug.Conn.resp(conn, 200, ~s<{"data": [{"message": "response"}]}>)
-    end
+    end)
 
     {:ok, _} = ExMoney.Saltedge.Client.request(:get, "endpoint")
   end
 
   test "successful GET request", %{bypass: bypass} do
-    Bypass.expect bypass, fn conn ->
+    Bypass.expect(bypass, fn conn ->
       assert "/endpoint" == conn.request_path
       assert "GET" == conn.method
 
       Plug.Conn.resp(conn, 200, ~s<{"data": [{"message": "response"}]}>)
-    end
+    end)
 
     {:ok, response} = ExMoney.Saltedge.Client.request(:get, "endpoint")
 
@@ -48,7 +48,7 @@ defmodule ExMoney.Saltedge.ClientTest do
   end
 
   test "successful POST request", %{bypass: bypass} do
-    Bypass.expect bypass, fn conn ->
+    Bypass.expect(bypass, fn conn ->
       opts = [parsers: [:json], json_decoder: Poison]
       conn = Plug.Parsers.call(conn, Plug.Parsers.init(opts))
 
@@ -56,7 +56,7 @@ defmodule ExMoney.Saltedge.ClientTest do
       assert "POST" == conn.method
       assert %{"foo" => "bar"} == conn.body_params
       Plug.Conn.resp(conn, 200, ~s<{}>)
-    end
+    end)
 
     {:ok, response} = ExMoney.Saltedge.Client.request(:post, "endpoint", ~s<{"foo": "bar"}>)
 
@@ -64,11 +64,11 @@ defmodule ExMoney.Saltedge.ClientTest do
   end
 
   test "unsuccessful request", %{bypass: bypass} do
-    Bypass.expect bypass, fn conn ->
+    Bypass.expect(bypass, fn conn ->
       assert "/endpoint" == conn.request_path
       assert "GET" == conn.method
       Plug.Conn.resp(conn, 400, ~s<{"error": [{"message": "foobar"}]}>)
-    end
+    end)
 
     {:error, response} = ExMoney.Saltedge.Client.request(:get, "endpoint")
 

@@ -10,6 +10,7 @@ defmodule ExMoney.Web.Api.V1.SessionController do
     case Guardian.Plug.current_resource(conn) do
       nil ->
         send_resp(conn, 200, "Unauthenticated")
+
       user ->
         {:ok, claims} = Guardian.Plug.claims(conn)
         jwt = Guardian.Plug.current_token(conn)
@@ -26,7 +27,7 @@ defmodule ExMoney.Web.Api.V1.SessionController do
 
   defp update_last_login_at(user) do
     User.update_changeset(user, %{last_login_at: NaiveDateTime.utc_now()})
-    |> Repo.update
+    |> Repo.update()
   end
 
   defp store_last_login_at(timestamp) do

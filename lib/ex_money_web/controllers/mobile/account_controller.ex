@@ -12,46 +12,49 @@ defmodule ExMoney.Web.Mobile.AccountController do
     from = DateHelper.first_day_of_month(parsed_date)
     to = DateHelper.last_day_of_month(parsed_date)
 
-    account = Account.by_id_with_login(account_id) |> Repo.one
+    account = Account.by_id_with_login(account_id) |> Repo.one()
 
-    month_transactions = Transaction.by_month(account_id, from, to)
-    |> Repo.all
+    month_transactions =
+      Transaction.by_month(account_id, from, to)
+      |> Repo.all()
 
-    categories = Transaction.group_by_month_by_category(account_id, from, to)
-    |> Repo.all
-    |> Enum.reduce(%{}, fn({category, amount}, acc) ->
-      {float_amount, _} = Decimal.to_string(amount, :normal)
-      |> Float.parse
+    categories =
+      Transaction.group_by_month_by_category(account_id, from, to)
+      |> Repo.all()
+      |> Enum.reduce(%{}, fn {category, amount}, acc ->
+        {float_amount, _} =
+          Decimal.to_string(amount, :normal)
+          |> Float.parse()
 
-      positive_float = float_amount * -1
+        positive_float = float_amount * -1
 
-      Map.put(acc, category.id,
-        %{
+        Map.put(acc, category.id, %{
           id: category.id,
           humanized_name: category.humanized_name,
           css_color: category.css_color,
           amount: positive_float,
           parent_id: category.parent_id
         })
-    end)
+      end)
 
     current_month = DateHelper.current_month(parsed_date)
     previous_month = DateHelper.previous_month(parsed_date)
     next_month = DateHelper.next_month(parsed_date)
 
-    render conn, :show,
+    render(conn, :show,
       account: account,
       month_transactions: month_transactions,
       categories: categories,
       current_month: current_month,
       previous_month: previous_month,
       next_month: next_month
+    )
   end
 
   def refresh(conn, %{"id" => account_id}) do
     account = Repo.get(Account, account_id)
 
-    render conn, :refresh, account: account
+    render(conn, :refresh, account: account)
   end
 
   def expenses(conn, %{"date" => date, "id" => account_id}) do
@@ -68,12 +71,13 @@ defmodule ExMoney.Web.Mobile.AccountController do
 
     from = URI.encode_www_form("/m/accounts/#{account_id}/expenses?date=#{date}")
 
-    render conn, :expenses,
+    render(conn, :expenses,
       expenses: expenses,
       date: %{label: formatted_date, value: date},
       from: from,
       account: account,
       account_balance: account_balance
+    )
   end
 
   def income(conn, %{"date" => date, "id" => account_id}) do
@@ -90,17 +94,18 @@ defmodule ExMoney.Web.Mobile.AccountController do
 
     from = URI.encode_www_form("/m/accounts/#{account_id}/income?date=#{date}")
 
-    render conn, :income,
+    render(conn, :income,
       income: income,
       date: %{label: formatted_date, value: date},
       from: from,
       account: account,
       account_balance: account_balance
+    )
   end
 
   defp account_balance(from, to, account_id) do
     ExMoney.Accounts.get_account_history_balance(from, to)
-    |> Enum.reduce(%{}, fn(history, acc) ->
+    |> Enum.reduce(%{}, fn history, acc ->
       inserted_at =
         history.inserted_at
         |> NaiveDateTime.to_date()
@@ -112,9 +117,9 @@ defmodule ExMoney.Web.Mobile.AccountController do
 
   defp fetch_and_process_transactions(scope) do
     scope
-    |> Repo.all
-    |> Enum.group_by(fn(transaction) -> transaction.made_on end)
-    |> Enum.sort(fn({date_1, _transactions}, {date_2, _transaction}) ->
+    |> Repo.all()
+    |> Enum.group_by(fn transaction -> transaction.made_on end)
+    |> Enum.sort(fn {date_1, _transactions}, {date_2, _transaction} ->
       Date.compare(date_1, date_2) != :lt
     end)
   end

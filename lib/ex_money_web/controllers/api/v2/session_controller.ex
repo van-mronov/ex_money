@@ -9,6 +9,7 @@ defmodule ExMoney.Web.Api.V2.SessionController do
     user = conn.private[:user]
 
     changeset = User.login_changeset(user, %{"password" => params["password"]})
+
     if changeset.valid? do
       new_conn = Guardian.Plug.api_sign_in(conn, user)
       jwt = Guardian.Plug.current_token(new_conn)
@@ -25,7 +26,7 @@ defmodule ExMoney.Web.Api.V2.SessionController do
   end
 
   defp fetch_user(conn, _) do
-    user = User.by_email(conn.params["email"] || "") |> Repo.one
+    user = User.by_email(conn.params["email"] || "") |> Repo.one()
 
     if user do
       put_private(conn, :user, user)

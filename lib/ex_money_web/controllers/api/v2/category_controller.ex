@@ -8,6 +8,6 @@ defmodule ExMoney.Web.Api.V2.CategoryController do
   def index(conn, _params) do
     categories = Repo.all(Category)
 
-    render conn, :index, categories: categories
+    render(conn, :index, categories: categories)
   end
 end
